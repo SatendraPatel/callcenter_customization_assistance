@@ -1,0 +1,38 @@
+{
+  "id": "troubleshoot-duplicate-popups",
+  "title": "Troubleshoot Duplicate Pop-ups",
+  "icon": "🔍",
+  "category": "troubleshooting",
+  "overview": "Fix duplicate pop-ups that appear when customizing existing action to open a modal.",
+  "issue": "Duplicate pop-ups are getting opened when customizing the existing action to open a modal",
+  "steps": [
+    {
+      "number": 1,
+      "title": "Verify app-customization.impl.ts",
+      "description": "Check the app-customization.impl.ts file where the custom action is registered. The issue occurs when the provider configuration is incorrect."
+    },
+    {
+      "number": 2,
+      "title": "Use useClass Parameter with Extended Class Name",
+      "description": "Pass useClass parameter as Extended class name in the provider configuration to properly override the OOB service.",
+      "code": "// Example: For Cancel Order modal\n// OOB Service: CancelOrderActionService\n// Custom Service: ExtnCancelOrderActionService\n\nexport class AppCustomizationImpl {\n  static readonly providers = [\n    {\n      provide: CancelOrderActionService,\n      useClass: ExtnCancelOrderActionService  // Pass extended class name here\n    }\n  ];\n}"
+    },
+    {
+      "number": 3,
+      "title": "Verify the Fix",
+      "description": "Rebuild and test the application. Click the action button and verify that only one modal opens."
+    }
+  ],
+  "keyPoints": [
+    "Use useClass to properly override OOB services",
+    "Provide the OOB service class in 'provide' field",
+    "Use custom service class in 'useClass' field",
+    "This pattern prevents duplicate service instantiation"
+  ],
+  "commonExamples": [
+    "Cancel Order: provide: CancelOrderActionService, useClass: ExtnCancelOrderActionService",
+    "Edit Order: provide: EditOrderActionService, useClass: ExtnEditOrderActionService",
+    "Create Return: provide: CreateReturnActionService, useClass: ExtnCreateReturnActionService",
+    "View Details: provide: ViewDetailsActionService, useClass: ExtnViewDetailsActionService"
+  ]
+}

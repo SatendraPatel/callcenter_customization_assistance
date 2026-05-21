@@ -1,0 +1,37 @@
+{
+  "id": "troubleshoot-blank-page",
+  "title": "Troubleshoot Blank Page Issue",
+  "icon": "🔍",
+  "category": "troubleshooting",
+  "overview": "Fix blank page or screen display when overriding mashup by updating API to Service.",
+  "issue": "Blank page or screen display when overriding the mashup by updating API to Service",
+  "steps": [
+    {
+      "number": 1,
+      "title": "Compare OOB API Output and Service Output",
+      "description": "Most likely, the TotalNumberOfRecords attribute might be missing from the Service output. Compare both outputs to identify missing attributes."
+    },
+    {
+      "number": 2,
+      "title": "Add TotalNumberOfRecords to Service Template",
+      "description": "Add the missing TotalNumberOfRecords attribute in the service template XML output to fix the issue. Ensure the TotalNumberOfRecords element is present in your service's Output section."
+    },
+    {
+      "number": 3,
+      "title": "Verify the Fix",
+      "description": "Rebuild and test the application to ensure the blank page issue is resolved."
+    }
+  ],
+  "keyPoints": [
+    "Compare OOB API output with custom Service output",
+    "TotalNumberOfRecords is commonly missing attribute",
+    "Add missing attributes to service template",
+    "Always verify output structure matches expected format"
+  ],
+  "commonCauses": [
+    "Missing TotalNumberOfRecords attribute",
+    "Incorrect XML structure in service template",
+    "Missing required output attributes",
+    "Data type mismatch in output"
+  ]
+}

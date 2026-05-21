@@ -1,0 +1,55 @@
+{
+  "id": "config-customization",
+  "title": "How to Customize Call Center by Configuration",
+  "icon": "⚙️",
+  "steps": [
+    {
+      "number": 1,
+      "title": "Navigate to the Module",
+      "description": "Go to the module you want to customize. For example:",
+      "code": "cd /callcenter-code/call-center-order"
+    },
+    {
+      "number": 2,
+      "title": "Configure Yarn",
+      "code": "yarn config set \"strict-ssl\" false"
+    },
+    {
+      "number": 3,
+      "title": "Install Dependencies",
+      "code": "yarn install --update-checksums"
+    },
+    {
+      "number": 4,
+      "title": "Update Server Config",
+      "description": "Update app-config.json and overrides.json files to add prodserverconfig hostname as IP Address of host"
+    },
+    {
+      "number": 5,
+      "title": "Create Custom Folder",
+      "code": "packages/order-root-config/src/assets/custom"
+    },
+    {
+      "number": 6,
+      "title": "Create Custom JSON Files",
+      "description": "Create files with same name as OOB files (e.g., search_fields.json)",
+      "warning": "OOB files location: /call-center-order/packages/order-shared/assets/call-center-order"
+    },
+    {
+      "number": 7,
+      "title": "Start Server",
+      "code": "yarn start-app"
+    },
+    {
+      "number": 8,
+      "title": "Access Application",
+      "code": "https://9.30.188.206:6443/call-center/login"
+    }
+  ],
+  "keyPoints": [
+    "Custom files override OOB files",
+    "Maintain same JSON structure",
+    "Use insertAfter to position fields"
+  ],
+  "modules": ["order", "return", "customer", "alert", "hub"]
+}

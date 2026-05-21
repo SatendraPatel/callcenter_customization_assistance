@@ -1,0 +1,62 @@
+{
+  "id": "customize-existing-action",
+  "title": "Customize Existing Action",
+  "icon": "✏️",
+  "overview": "Modify an existing out-of-box action to add custom behavior or logic.",
+  "example": "Customizing Select Customer Action for Create Order",
+  "steps": [
+    {
+      "number": 1,
+      "title": "Copy OOB Code to src-custom Folder",
+      "description": "Copy the action service file from the shared library to your custom folder:",
+      "from": "callcenter-code/call-center-order/packages/order-shared/src/lib/actions/select-customer-action.service.ts",
+      "to": "callcenter-code/call-center-order/packages/create-order/src-custom/app/custom/actions"
+    },
+    {
+      "number": 2,
+      "title": "Rename File and Class",
+      "items": [
+        "Rename file to: extn-select-customer-action.service.ts",
+        "Change class name to: ExtnSelectCustomerActionService"
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Resolve Dependencies",
+      "description": "Add required dependency files:",
+      "items": [
+        "paramtypes.ts",
+        "order.constant.ts"
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Update app-customization.impl.ts",
+      "description": "Register your custom action:",
+      "code": "export class AppCustomizationImpl {\n  static readonly components = [];\n\n  static readonly providers = [\n    ExtnSelectCustomerActionService,\n    {\n      provide: CUSTOM_FEATURE_ACTIONS,\n      useValue: [\n        {\n          name: Constants.SELECT_CUSTOMER,\n          action: ExtnSelectCustomerActionService\n        },\n      ],\n      multi: true,\n    },\n  ];\n\n  static readonly imports = [\n    BucCommonComponentsModule,\n    BucFeatureComponentsModule,\n  ];\n}"
+    },
+    {
+      "number": 5,
+      "title": "Apply Customizations",
+      "description": "Implement your custom logic in ExtnSelectCustomerActionService."
+    },
+    {
+      "number": 6,
+      "title": "Test Your Changes",
+      "description": "Run the development server:",
+      "code": "yarn start-app"
+    }
+  ],
+  "keyPoints": [
+    "Always prefix custom files with extn-",
+    "Update class names to match the new file name",
+    "Register actions in CUSTOM_FEATURE_ACTIONS provider",
+    "Resolve all import dependencies"
+  ],
+  "commonActions": [
+    "Select Customer Action",
+    "Add Items Action",
+    "Submit Order Action",
+    "Payment Actions"
+  ]
+}

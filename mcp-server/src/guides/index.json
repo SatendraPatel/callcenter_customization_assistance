@@ -1,0 +1,88 @@
+{
+  "guides": [
+    {
+      "id": "config-customization",
+      "name": "Configuration Customization",
+      "icon": "⚙️",
+      "category": "customization",
+      "keywords": ["config", "configuration", "customize by configuration"]
+    },
+    {
+      "id": "component-customization",
+      "name": "Component Customization",
+      "icon": "🔧",
+      "category": "customization",
+      "keywords": ["component", "features component", "customize component"]
+    },
+    {
+      "id": "shared-component-customization",
+      "name": "Shared Component Customization",
+      "icon": "🧩",
+      "category": "customization",
+      "keywords": ["shared component", "shared", "reusable"]
+    },
+    {
+      "id": "home-portlet-customization",
+      "name": "Home Portlet Customization",
+      "icon": "🏠",
+      "category": "customization",
+      "keywords": ["home portlet", "portlet", "widget", "home"]
+    },
+    {
+      "id": "customize-existing-action",
+      "name": "Customize Existing Action",
+      "icon": "✏️",
+      "category": "actions",
+      "keywords": ["action", "existing action", "modify action"]
+    },
+    {
+      "id": "custom-action-with-config",
+      "name": "Custom Action with Config",
+      "icon": "⚙️",
+      "category": "actions",
+      "keywords": ["action", "custom action", "config", "configuration"]
+    },
+    {
+      "id": "custom-action-with-code",
+      "name": "Custom Action with Code",
+      "icon": "💻",
+      "category": "actions",
+      "keywords": ["action", "custom action", "code", "implement"]
+    },
+    {
+      "id": "incremental-mashup",
+      "name": "Incremental Mashup",
+      "icon": "➕",
+      "category": "mashup",
+      "keywords": ["mashup", "incremental", "extend"]
+    },
+    {
+      "id": "override-mashup",
+      "name": "Override Mashup",
+      "icon": "🔄",
+      "category": "mashup",
+      "keywords": ["mashup", "override", "replace"]
+    },
+    {
+      "id": "dev-environment-setup",
+      "name": "Dev Environment Setup",
+      "icon": "🛠️",
+      "category": "setup",
+      "keywords": ["setup", "environment", "dev", "development"]
+    },
+    {
+      "id": "troubleshoot-blank-page",
+      "name": "Troubleshoot Blank Page",
+      "icon": "🔍",
+      "category": "troubleshooting",
+      "keywords": ["blank page", "blank screen", "mashup", "service", "TotalNumberOfRecords"]
+    },
+    {
+      "id": "troubleshoot-duplicate-popups",
+      "name": "Troubleshoot Duplicate Pop-ups",
+      "icon": "🔍",
+      "category": "troubleshooting",
+      "keywords": ["duplicate", "popup", "modal", "useClass", "provider"]
+    }
+  ]
+}

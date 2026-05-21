@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM OMS Call Center Customization Assistant</title>
+    <link rel="stylesheet" href="css/chatbot.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <span>+</span>
+                    <span>New chat</span>
+                </button>
+            </div>
+
+            <div class="chat-history">
+                <div class="chat-section">
+                    <div class="chat-section-title">Suggestions</div>
+                    <div class="chat-item" onclick="sendQuickMessage('setup')">
+                        <span class="chat-item-icon">🛠️</span>
+                        <div>
+                            <div class="chat-item-text">Dev Environment Setup</div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="sendQuickMessage('config customization')">
+                        <span class="chat-item-icon">⚙️</span>
+                        <div>
+                            <div class="chat-item-text">Customization by Configuration</div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="sendQuickMessage('component customization')">
+                        <span class="chat-item-icon">🔧</span>
+                        <div>
+                            <div class="chat-item-text">Component Customization</div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="sendQuickMessage('shared component customization')">
+                        <span class="chat-item-icon">🧩</span>
+                        <div>
+                            <div class="chat-item-text">Shared Component Customization</div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="sendQuickMessage('home portlet customization')">
+                        <span class="chat-item-icon">🏠</span>
+                        <div>
+                            <div class="chat-item-text">Home Portlet Customization</div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="toggleActionsSubMenu()">
+                        <span class="chat-item-icon">⚡</span>
+                        <div>
+                            <div class="chat-item-text">Actions Customization ▾</div>
+                        </div>
+                    </div>
+                    <div id="actionsSubMenu" style="display:none; padding-left: 16px;">
+                        <div class="chat-item" onclick="sendQuickMessage('customize existing action')">
+                            <span class="chat-item-icon">✏️</span>
+                            <div>
+                                <div class="chat-item-text">Customize Existing Action</div>
+                            </div>
+                        </div>
+                        <div class="chat-item" onclick="sendQuickMessage('implement custom action with config')">
+                            <span class="chat-item-icon">⚙️</span>
+                            <div>
+                                <div class="chat-item-text">Custom Action with Config</div>
+                            </div>
+                        </div>
+                        <div class="chat-item" onclick="sendQuickMessage('implement custom action with code')">
+                            <span class="chat-item-icon">💻</span>
+                            <div>
+                                <div class="chat-item-text">Custom Action with Code</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="toggleMashupSubMenu()">
+                        <span class="chat-item-icon">🔌</span>
+                        <div>
+                            <div class="chat-item-text">Mashup Extensions ▾</div>
+                        </div>
+                    </div>
+                    <div id="mashupSubMenu" style="display:none; padding-left: 16px;">
+                        <div class="chat-item" onclick="sendQuickMessage('incremental mashup')">
+                            <span class="chat-item-icon">➕</span>
+                            <div>
+                                <div class="chat-item-text">Incremental Mashup</div>
+                            </div>
+                        </div>
+                        <div class="chat-item" onclick="sendQuickMessage('override mashup')">
+                            <span class="chat-item-icon">🔄</span>
+                            <div>
+                                <div class="chat-item-text">Override Mashup</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-item" onclick="sendQuickMessage('help')">
+                        <span class="chat-item-icon">❓</span>
+                        <div>
+                            <div class="chat-item-text">Help & Guide</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-section">
+                    <div class="chat-section-title">🚀 Planned Enhancements</div>
+                    <div class="chat-item" onclick="sendQuickMessage('planned enhancements')">
+                        <span class="chat-item-icon">📋</span>
+                        <div>
+                            <div class="chat-item-text">View Planned Enhancements</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navigation -->
+            <div class="top-nav">
+                <div class="nav-brand">IBM OMS Next-Gen Call-Center Customization Assistant</div>
+                <div class="nav-actions">
+                    <button class="nav-btn">English ▾</button>
+                    <button class="admin-btn" onclick="showAdminPanel()" title="View Visitor Tracker">
+                        📊 Visitor Tracker
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="messages-wrapper">
+                        <!-- Messages will be added here -->
+                    </div>
+                </div>
+
+                <!-- Chat Input Area -->
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="userInput"
+                            class="chat-input"
+                            placeholder="Type your message here..."
+                            rows="1"
+                            onkeypress="handleInputKeyPress(event)"
+                            oninput="autoResizeTextarea(this)"></textarea>
+                        <button class="send-btn" onclick="sendMessage()" title="Send message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-box">
+            <div class="modal-icon">🔐</div>
+            <div class="modal-title">Admin Access Required</div>
+            <div class="modal-subtitle">Enter password to view visitor tracker</div>
+            <input type="password" class="modal-input" id="adminPassword" placeholder="Enter password" autocomplete="off" onkeypress="handleAdminPasswordKeyPress(event)">
+            <div class="modal-error" id="modalError">❌ Incorrect password. Please try again.</div>
+            <div class="modal-actions">
+                <button class="modal-btn-cancel" onclick="closeAdminModal()">Cancel</button>
+                <button class="modal-btn-submit" onclick="submitAdminPassword()">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/api-client.js"></script>
+    <script src="js/chat-core.js"></script>
+    <script src="js/chat-responses.js"></script>
+    <script src="js/feedback.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

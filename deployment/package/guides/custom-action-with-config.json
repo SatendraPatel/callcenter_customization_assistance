@@ -1,0 +1,60 @@
+{
+  "id": "custom-action-with-config",
+  "title": "Custom Action with Config",
+  "icon": "⚙️",
+  "category": "actions",
+  "overview": "Add custom actions to existing pages by using the differential customization approach, which updates the buc-page-definitions.json file to customize the page.",
+  "example": "Adding custom action in Order Summary screen",
+  "steps": [
+    {
+      "number": 1,
+      "title": "Update buc-page-definitions.json",
+      "description": "Add custom action to the page definition file. For example, to add custom action in Order Summary screen, go to:",
+      "code": "callcenter-code/call-center-order/packages/order-details/src-custom/assets/custom/buc-page-definitions.json\n\n{\n    \"order-details\": {\n        \"name\": \"order-details\",\n        \"actions\": [\n            {\n                \"id\": \"custom-action\",\n                \"label\": \"custom.LABEL_CUSTOM_ACTION\",\n                \"resourceId\": \"ICC000011\"\n            }\n        ]\n    }\n}"
+    },
+    {
+      "number": 2,
+      "title": "Add Translation Strings",
+      "description": "Create or edit the en.json file for translation strings. For example, for the order details page:",
+      "code": "packages/order-details/src-custom/assets/custom/i18n/en.json\n\n{\n    \"custom\": {\n        \"LABEL_CUSTOM_ACTION\": \"Custom action\"\n    }\n}"
+    },
+    {
+      "number": 3,
+      "title": "Verify Custom Action Visibility",
+      "description": "Build and run the application to verify the custom action is visible on the screen."
+    },
+    {
+      "number": 4,
+      "title": "Update app-customization.impl.ts",
+      "description": "Register the custom action service in the customization implementation file:",
+      "code": "export class AppCustomizationImpl {\n    static readonly components = [];\n\n    static readonly providers = [\n        CustomActionService,\n        {\n            provide: CUSTOM_FEATURE_ACTIONS,\n            useValue: [\n                {\n                    name: 'custom-action',\n                    action: CustomActionService,\n                },\n            ],\n            multi: true,\n        },\n    ];\n\n    static readonly imports = [\n        BucCommonComponentsModule,\n        BucFeatureComponentsModule,\n    ];\n}"
+    },
+    {
+      "number": 5,
+      "title": "Create Custom Action Service",
+      "description": "Create the service implementation file at the following location:",
+      "filePath": "callcenter-code/call-center-order/packages/order-details/src-custom/app/service/custom-action.service.ts",
+      "code": "@Injectable()\nexport class CustomActionService {\n    constructor(\n        private actionProcessorService: ActionProcessorService,\n        private ccNavigationSvc: CallCenterNavigationService\n    ) {\n        this.actionProcessorService.select<any>('custom-action').subscribe(({params}) => {\n            this.openCustomModal(params);\n        });\n    }\n\n    private openCustomModal(params: any) {\n        const orderDetailsData = params.data;\n        const orderHeaderKey = orderDetailsData.pageObject.OrderHeaderKey;\n        const orderNo = orderDetailsData.pageObject.OrderNo;\n        const enterpriseCode = orderDetailsData.pageObject.EnterpriseCode;\n\n        if (!orderDetailsData) return;\n\n        const opened = this.ccNavigationSvc.openUrlInNewTab('/custom-modal', {\n            originalOrderNo: orderNo,\n            originalOrderHeaderKey: orderHeaderKey,\n            enterpriseCode: enterpriseCode\n        });\n\n        console.log('openUrlInNewTab returned:', opened);\n    }\n}"
+    },
+    {
+      "number": 6,
+      "title": "Validate Custom Action Functionality",
+      "description": "Test the custom action by clicking it on the page and verifying the expected behavior (e.g., modal opens, navigation occurs, etc.)."
+    }
+  ],
+  "keyPoints": [
+    "Use differential customization approach via buc-page-definitions.json",
+    "Always add translation strings for custom labels",
+    "Register custom action service in app-customization.impl.ts",
+    "Use CUSTOM_FEATURE_ACTIONS provider for action registration",
+    "Subscribe to actionProcessorService to handle action clicks",
+    "Test thoroughly after implementation"
+  ],
+  "commonActions": [
+    "Add custom action to Order Details page",
+    "Add custom action to Customer Details page",
+    "Add custom action to Return Details page",
+    "Implement custom modal or navigation",
+    "Pass context data to custom action handler"
+  ]
+}
