@@ -3,6 +3,8 @@ import cors from 'cors';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import Database from 'better-sqlite3';
+import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,6 +15,117 @@ const PORT = process.env.PORT || 5000;
 // Enable CORS for browser access
 app.use(cors());
 app.use(express.json());
+
+// ============================================================
+// SQLite Database Setup
+// ============================================================
+const DB_FILE = join(__dirname, 'oms-chatbot.db');
+const db = new Database(DB_FILE);
+
+// Create tables if they don't exist
+db.exec(`
+    CREATE TABLE IF NOT EXISTS visitors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip TEXT NOT NULL,
+        time TEXT NOT NULL,
+        timestamp INTEGER NOT NULL,
+        user_agent TEXT,
+        path TEXT,
+        referer TEXT,
+        country TEXT,
+        country_code TEXT,
+        region TEXT,
+        city TEXT,
+        isp TEXT,
+        org TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS feedback (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        msg_id TEXT NOT NULL,
+        reaction TEXT NOT NULL,
+        experience TEXT,
+        time_saved TEXT,
+        comments TEXT,
+        timestamp TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+    );
+`);
+
+console.log('✅ SQLite database initialized:', DB_FILE);
+
+// ============================================================
+// Geolocation Helper
+// ============================================================
+function getGeoLocation(ip, callback) {
+    if (ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip === 'Unknown') {
+        callback({ country: 'Local', city: 'Localhost', region: '-', isp: '-', org: '-', countryCode: '-' });
+        return;
+    }
+
+    const apiUrl = `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,isp,org`;
+
+    http.get(apiUrl, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+            try {
+                const geo = JSON.parse(data);
+                if (geo.status === 'success') {
+                    callback({
+                        country: geo.country || '-',
+                        countryCode: geo.countryCode || '-',
+                        region: geo.regionName || '-',
+                        city: geo.city || '-',
+                        isp: geo.isp || '-',
+                        org: geo.org || '-'
+                    });
+                } else {
+                    callback({ country: '-', city: '-', region: '-', isp: '-', org: '-', countryCode: '-' });
+                }
+            } catch (e) {
+                callback({ country: '-', city: '-', region: '-', isp: '-', org: '-', countryCode: '-' });
+            }
+        });
+    }).on('error', () => {
+        callback({ country: '-', city: '-', region: '-', isp: '-', org: '-', countryCode: '-' });
+    });
+}
+
+// ============================================================
+// Visitor Logging
+// ============================================================
+const insertVisitor = db.prepare(`
+    INSERT INTO visitors (ip, time, timestamp, user_agent, path, referer, country, country_code, region, city, isp, org)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`);
+
+function logVisitor(req, callback) {
+    const ip = req.headers['x-forwarded-for'] ||
+               req.connection?.remoteAddress ||
+               req.socket?.remoteAddress || 'Unknown';
+    const cleanIP = ip.replace('::ffff:', '');
+
+    getGeoLocation(cleanIP, (geo) => {
+        const time = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+        const timestamp = Date.now();
+
+        try {
+            insertVisitor.run(
+                cleanIP, time, timestamp,
+                req.headers['user-agent'] || 'Unknown',
+                req.url,
+                req.headers['referer'] || '-',
+                geo.country, geo.countryCode, geo.region, geo.city, geo.isp, geo.org
+            );
+        } catch (e) {
+            console.error('Error inserting visitor:', e.message);
+        }
+
+        console.log(`[${time}] ${cleanIP} (${geo.city}, ${geo.country}) - ${req.method} ${req.url}`);
+        if (callback) callback({ ip: cleanIP, country: geo.country, city: geo.city, time });
+    });
+}
 
 // Load guides from MCP server directory (reuse existing data)
 const guidesPath = join(__dirname, '../mcp-server/src/guides');
@@ -108,6 +221,109 @@ function formatGuideAsHTML(guide) {
 }
 
 // API Routes
+
+// ============================================================
+// Visitor & Feedback API Endpoints
+// ============================================================
+
+// Track visitor
+app.post('/api/track', (req, res) => {
+  logVisitor(req, (entry) => {
+    res.json({ status: 'ok', ip: entry.ip, country: entry.country, city: entry.city });
+  });
+});
+
+// Get all visitors
+app.get('/api/visitors', (req, res) => {
+  try {
+    const visitors = db.prepare('SELECT * FROM visitors ORDER BY timestamp DESC LIMIT 1000').all();
+    // Map snake_case to camelCase for frontend compatibility
+    const mapped = visitors.map(v => ({
+      ip: v.ip,
+      time: v.time,
+      timestamp: v.timestamp,
+      userAgent: v.user_agent,
+      path: v.path,
+      referer: v.referer,
+      country: v.country,
+      countryCode: v.country_code,
+      region: v.region,
+      city: v.city,
+      isp: v.isp,
+      org: v.org
+    }));
+    res.json(mapped);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read visitors' });
+  }
+});
+
+// Clear visitors
+app.post('/api/visitors/clear', (req, res) => {
+  try {
+    db.prepare('DELETE FROM visitors').run();
+    res.json({ status: 'cleared' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to clear visitors' });
+  }
+});
+
+// Save feedback
+app.post('/api/feedback', (req, res) => {
+  try {
+    const data = req.body;
+    // Remove existing feedback for this msgId (upsert)
+    db.prepare('DELETE FROM feedback WHERE msg_id = ?').run(data.msgId);
+    db.prepare(`
+      INSERT INTO feedback (msg_id, reaction, experience, time_saved, comments, timestamp, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      data.msgId,
+      data.reaction,
+      data.experience || null,
+      data.timeSaved || '0',
+      data.comments || null,
+      data.timestamp || new Date().toISOString(),
+      Date.now()
+    );
+    res.json({ status: 'saved' });
+  } catch (error) {
+    console.error('Error saving feedback:', error.message);
+    res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+// Get all feedback
+app.get('/api/feedback', (req, res) => {
+  try {
+    const feedbacks = db.prepare('SELECT * FROM feedback ORDER BY created_at ASC').all();
+    const mapped = feedbacks.map(f => ({
+      msgId: f.msg_id,
+      reaction: f.reaction,
+      experience: f.experience,
+      timeSaved: f.time_saved,
+      comments: f.comments,
+      timestamp: f.timestamp
+    }));
+    res.json(mapped);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read feedback' });
+  }
+});
+
+// Clear feedback
+app.post('/api/feedback/clear', (req, res) => {
+  try {
+    db.prepare('DELETE FROM feedback').run();
+    res.json({ status: 'cleared' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to clear feedback' });
+  }
+});
+
+// ============================================================
+// Guide API Endpoints
+// ============================================================
 
 // Health check
 app.get('/health', (req, res) => {

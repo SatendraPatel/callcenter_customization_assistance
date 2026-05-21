@@ -40,9 +40,10 @@
         async function loadAdminPanel() {
             try {
                 // Fetch visitor data and feedback from server API (SQLite)
+                const apiUrl = DEPLOYMENT_CONFIG.getApiUrl();
                 const [visitorRes, feedbackRes] = await Promise.all([
-                    fetch('/api/visitors'),
-                    fetch('/api/feedback')
+                    fetch(`${apiUrl}/api/visitors`),
+                    fetch(`${apiUrl}/api/feedback`)
                 ]);
                 const visitors = await visitorRes.json();
                 const feedbacks = await feedbackRes.json();
@@ -55,9 +56,12 @@
                 const recentVisitors = visitors.slice(0, 100);
                 recentVisitors.forEach((v, i) => {
                     const location = v.city && v.country ? v.city + ', ' + v.country : (v.country || '-');
+                    const username = v.username || 'Anonymous';
+                    const usernameStyle = v.username ? 'color:#0f62fe;font-weight:600;' : 'color:#8d8d8d;font-style:italic;';
                     tableRows += '<tr style="border-bottom:1px solid #e0e0e0;">' +
                         '<td style="padding:8px;">' + (i + 1) + '</td>' +
                         '<td style="padding:8px;font-weight:600;color:#0f62fe;">' + v.ip + '</td>' +
+                        '<td style="padding:8px;' + usernameStyle + '">' + username + '</td>' +
                         '<td style="padding:8px;">' + location + '</td>' +
                         '<td style="padding:8px;">' + v.time + '</td>' +
                         '<td style="padding:8px;font-size:11px;color:#525252;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + v.userAgent + '</td>' +
@@ -121,6 +125,7 @@
                     '<thead><tr style="background:#f4f4f4;">' +
                     '<th style="padding:8px;text-align:left;">#</th>' +
                     '<th style="padding:8px;text-align:left;">IP Address</th>' +
+                    '<th style="padding:8px;text-align:left;">Username</th>' +
                     '<th style="padding:8px;text-align:left;">Location</th>' +
                     '<th style="padding:8px;text-align:left;">Visit Time</th>' +
                     '<th style="padding:8px;text-align:left;">Browser</th>' +
@@ -155,8 +160,11 @@
 
         async function clearVisitorData() {
             try {
-                await fetch('/api/visitors/clear', { method: 'POST' });
+                const apiUrl = DEPLOYMENT_CONFIG.getApiUrl();
+                await fetch(`${apiUrl}/api/visitors/clear`, { method: 'POST' });
                 addBotMessage('<div class="success">✅ Visitor data cleared successfully!</div>');
+                // Reload admin panel to show updated data
+                setTimeout(() => loadAdminPanel(), 500);
             } catch (error) {
                 addBotMessage('<div class="warning">⚠️ Failed to clear data.</div>');
             }

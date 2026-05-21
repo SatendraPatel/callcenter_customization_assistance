@@ -126,6 +126,9 @@
         }
 
         function sendQuickMessage(message) {
+            // Track sidebar click
+            trackSidebarClick(message);
+            
             addUserMessage(message);
             showTypingIndicator();
             

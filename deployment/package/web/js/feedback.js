@@ -94,7 +94,8 @@
 
         async function saveFeedback(msgId, reaction, feedbackData) {
             try {
-                await fetch('/api/feedback', {
+                const apiUrl = DEPLOYMENT_CONFIG.getApiUrl();
+                await fetch(`${apiUrl}/api/feedback`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -126,12 +127,15 @@
                 addBotMessage('<div class="warning">⚠️ Admin authentication required to clear feedback data.</div>');
                 return;
             }
-            await fetch('/api/feedback/clear', { method: 'POST' });
+            const apiUrl = DEPLOYMENT_CONFIG.getApiUrl();
+            await fetch(`${apiUrl}/api/feedback/clear`, { method: 'POST' });
         }
 
         async function clearFeedbacksAndNotify() {
             await clearFeedbacks();
             addBotMessage('<div class="success">✅ Feedback data cleared!</div>');
+            // Reload admin panel to show updated data
+            setTimeout(() => loadAdminPanel(), 500);
         }
 
 
@@ -167,8 +171,95 @@
         // IP TRACKER - Visitor Tracking
         // ============================================================
 
+        // ============================================================
+        // USERNAME INITIALIZATION - RUNS IMMEDIATELY
+        // ============================================================
+        
+        // Set username IMMEDIATELY before any API calls
+        window.OMS_USERNAME = localStorage.getItem('oms_visitor_username') || 'Anonymous';
+        console.log('Initial username set:', window.OMS_USERNAME);
+
+        // ============================================================
+        // USERNAME MODAL FUNCTIONS
+        // ============================================================
+        
+        function handleUsernameKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitUsername();
+            }
+        }
+
+        function submitUsername() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (username) {
+                localStorage.setItem('oms_visitor_username', username);
+                window.OMS_USERNAME = username;
+                console.log('Username updated:', username);
+            } else {
+                // If empty, treat as skip
+                skipUsername();
+                return;
+            }
+            closeUsernameModal();
+        }
+
+        function skipUsername() {
+            localStorage.setItem('oms_visitor_username', 'Anonymous');
+            window.OMS_USERNAME = 'Anonymous';
+            console.log('Username skipped - set to Anonymous');
+            closeUsernameModal();
+        }
+
+        function closeUsernameModal() {
+            document.getElementById('usernameModal').classList.remove('active');
+            // Focus on chat input after closing modal
+            setTimeout(() => {
+                document.getElementById('userInput').focus();
+            }, 300);
+        }
+
+        // Show/hide modal based on stored username
+        window.addEventListener('DOMContentLoaded', function() {
+            const username = localStorage.getItem('oms_visitor_username');
+            const modal = document.getElementById('usernameModal');
+            
+            if (username) {
+                // User already has a username - hide modal
+                modal.classList.remove('active');
+                console.log('Existing username loaded:', username);
+            } else {
+                // New user - ensure modal is visible and focus input
+                modal.classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('usernameInput').focus();
+                }, 300);
+            }
+        });
+
         async function trackVisitor() {
-            // Visitor is automatically tracked by server when page loads
-            // No action needed here - server logs IP on every request
+            // Username already initialized above
+            console.log('trackVisitor called - username:', window.OMS_USERNAME);
+        }
+
+        // Track sidebar clicks by sending a lightweight API request
+        async function trackSidebarClick(action) {
+            try {
+                const apiUrl = DEPLOYMENT_CONFIG.getApiUrl();
+                await fetch(`${apiUrl}/api/track-action`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Username': window.OMS_USERNAME || 'Anonymous'
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        type: 'sidebar_click'
+                    })
+                });
+                console.log('📊 Sidebar click tracked:', action);
+            } catch (error) {
+                console.log('Failed to track sidebar click:', error);
+            }
         }
 

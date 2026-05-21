@@ -9,10 +9,30 @@ if (typeof DEPLOYMENT_CONFIG !== 'undefined') {
     API_BASE_URL = `${DEPLOYMENT_CONFIG.getApiUrl()}/api`;
 }
 
+// Helper function to get headers with username
+function getRequestHeaders() {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    // Add username if available
+    if (window.OMS_USERNAME) {
+        headers['X-Username'] = window.OMS_USERNAME;
+        console.log('✅ Adding X-Username header:', window.OMS_USERNAME);
+    } else {
+        console.warn('⚠️ window.OMS_USERNAME not set, using Anonymous');
+    }
+    
+    console.log('📤 Request headers:', headers);
+    return headers;
+}
+
 // Fetch a guide by ID and return formatted HTML
 async function fetchGuide(guideId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/guides/${guideId}/html`);
+        const response = await fetch(`${API_BASE_URL}/guides/${guideId}/html`, {
+            headers: getRequestHeaders()
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -29,7 +49,9 @@ async function fetchGuide(guideId) {
 // Search for guides by keyword
 async function searchGuides(query) {
     try {
-        const response = await fetch(`${API_BASE_URL}/guides/search/${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_BASE_URL}/guides/search/${encodeURIComponent(query)}`, {
+            headers: getRequestHeaders()
+        });
         const data = await response.json();
         
         if (data.success && data.guides.length > 0) {
@@ -51,7 +73,9 @@ async function listGuides(category = null) {
             ? `${API_BASE_URL}/guides?category=${category}`
             : `${API_BASE_URL}/guides`;
             
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: getRequestHeaders()
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -69,7 +93,9 @@ async function listGuides(category = null) {
 async function checkAPIHealth() {
     try {
         const healthUrl = API_BASE_URL.replace('/api', '/health');
-        const response = await fetch(healthUrl);
+        const response = await fetch(healthUrl, {
+            headers: getRequestHeaders()
+        });
         const data = await response.json();
         return data.status === 'ok';
     } catch (error) {

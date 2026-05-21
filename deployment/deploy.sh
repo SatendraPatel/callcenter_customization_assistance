@@ -78,10 +78,21 @@ chmod +x "$DEPLOY_DIR/start-web-server.sh"
 # Copy production documentation
 echo "📚 Copying production documentation..."
 cp "$SCRIPT_DIR/PRODUCTION_SETUP.md" "$DEPLOY_DIR/"
+cp "$SCRIPT_DIR/FEATURES.md" "$DEPLOY_DIR/"
 
 # Create README
 cat > "$DEPLOY_DIR/README.md" << 'EOF'
 # OMS Call Center Customization Assistant - Deployment Package
+
+## Features
+
+✨ **Interactive Customization Guides** - Step-by-step instructions for Call Center customization
+📊 **Visitor Analytics** - Track visitor statistics and geographic distribution
+💬 **User Feedback System** - Collect likes, dislikes, and improvement suggestions
+🔐 **Admin Panel** - View analytics and manage data (password: 2026)
+📈 **SQLite Database** - All data stored locally for privacy
+
+See [FEATURES.md](FEATURES.md) for complete feature documentation.
 
 ## Quick Start
 
@@ -128,12 +139,21 @@ Open in browser: `http://your-server-ip:9090`
 
 ```
 package/
-├── api-server/          # API server (Express.js)
+├── api-server/          # API server (Express.js + SQLite)
+│   ├── server.js        # Main server file
+│   ├── package.json     # Dependencies
+│   └── oms-chatbot.db   # SQLite database (created on first run)
 ├── web/                 # Web interface (HTML/JS/CSS)
+│   ├── index.html       # Main chatbot interface
+│   ├── js/              # JavaScript files (including feedback.js, admin.js)
+│   ├── css/             # Stylesheets
+│   └── images/          # Images
 ├── guides/              # Guide data (JSON files)
 ├── config.js            # Configuration file
 ├── start-api-server.sh  # API server startup script
 ├── start-web-server.sh  # Web server startup script
+├── FEATURES.md          # Complete feature documentation
+├── PRODUCTION_SETUP.md  # Production deployment guide
 └── README.md            # This file
 ```
 
@@ -141,6 +161,7 @@ package/
 
 - Node.js 18+ (for API server)
 - Python 3 (for web server, or use any HTTP server)
+- SQLite3 (included with Node.js better-sqlite3 package)
 
 ## Troubleshooting
 
@@ -168,14 +189,45 @@ cd web && python3 -m http.server 9090
 3. Verify config.js has correct server IP
 4. Test API: `curl http://your-server-ip:5000/health`
 
+## Admin Panel
+
+Access visitor analytics and feedback:
+1. Type "admin" in the chat
+2. Enter password: `2026`
+3. View analytics dashboard
+
+Features:
+- Total visits and unique IPs
+- Geographic distribution
+- Feedback analytics (likes/dislikes)
+- Average time saved
+- Data management (clear visitors/feedback)
+
+## Database
+
+All data is stored in `api-server/oms-chatbot.db` (SQLite).
+
+**Backup database:**
+```bash
+cp api-server/oms-chatbot.db api-server/backup.db
+```
+
+**Export data:**
+```bash
+sqlite3 -header -csv api-server/oms-chatbot.db "SELECT * FROM visitors;" > visitors.csv
+sqlite3 -header -csv api-server/oms-chatbot.db "SELECT * FROM feedback;" > feedback.csv
+```
+
 ## Production Deployment
 
 For production, consider:
 1. Use HTTPS (update protocol in config.js)
 2. Use a proper web server (nginx, Apache)
-3. Set up process manager (PM2, systemd)
+3. Set up process manager (PM2 - see setup-production.sh)
 4. Configure firewall rules
 5. Set up monitoring and logging
+6. Implement data retention policies
+7. Add privacy policy for visitor tracking
 
 EOF
 

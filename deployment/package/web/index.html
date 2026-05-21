@@ -159,6 +159,20 @@
         </div>
     </div>
 
+    <!-- Username Modal -->
+    <div class="modal-overlay active" id="usernameModal">
+        <div class="modal-box">
+            <div class="modal-icon">👋</div>
+            <div class="modal-title">Welcome!</div>
+            <div class="modal-subtitle">Please enter your name to personalize your experience</div>
+            <input type="text" class="modal-input" id="usernameInput" placeholder="Enter your name" autocomplete="off" onkeypress="handleUsernameKeyPress(event)">
+            <div class="modal-actions">
+                <button class="modal-btn-cancel" onclick="skipUsername()">Skip</button>
+                <button class="modal-btn-submit" onclick="submitUsername()">Continue</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Password Modal -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal-box">
@@ -175,6 +189,7 @@
     </div>
 
     <!-- JavaScript Modules -->
+    <script src="../config.js"></script>
     <script src="js/api-client.js"></script>
     <script src="js/chat-core.js"></script>
     <script src="js/chat-responses.js"></script>
